@@ -1,6 +1,5 @@
 package com.example.parry;
 
-import com.example.mixin.FireballEntityAccessor;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BreezeEntity;
@@ -23,9 +22,15 @@ import net.minecraft.world.World;
  *
  * <ul>
  *     <li>Counter-attacking a mob with an axe during a parry window stuns it.</li>
- *     <li>Striking a ghast fireball reflects it at 2.5x speed and doubles its impact damage.</li>
- *     <li>Striking a breeze wind charge returns it at 3.0x speed so it stuns the breeze.</li>
+ *     <li>Striking an incoming ghast fireball reflects it at 2.5x speed and doubles its damage.</li>
+ *     <li>Striking an incoming breeze wind charge returns it at 3.0x speed so it stuns the breeze.</li>
  * </ul>
+ *
+ * <p>All state changes happen on the server. The callback also runs on the client, and mutating
+ * shared state there would consume the parry window before the server sees the swing (which broke
+ * the melee parry in single-player). The client still reports {@link ActionResult#SUCCESS} for a
+ * projectile it would reflect so that vanilla's own attack prediction - including the built-in
+ * melee deflection of redirectable projectiles - is skipped and only the server decides.
  */
 public final class ProjectileReflectionHandler {
 	private static final double FIREBALL_REFLECTION_MULTIPLIER = 2.5;
@@ -41,11 +46,15 @@ public final class ProjectileReflectionHandler {
 	private static ActionResult onAttackEntity(PlayerEntity player, World world, Hand hand,
 			Entity target, EntityHitResult hitResult) {
 		if (target instanceof MobEntity mob) {
-			ItemStack stack = player.getStackInHand(hand);
+			// The parry window only ever exists on the server. The client lets the normal attack run
+			// so the server receives the swing and can consume the window itself.
+			if (!world.isClient()) {
+				ItemStack stack = player.getStackInHand(hand);
 
-			// The axe is required to convert a blocked hit into a stun.
-			if (stack.isIn(ItemTags.AXES) && ParryTracker.consumeWindow(player, mob)) {
-				applyMeleeParry(player, world, mob);
+				// The axe is required to convert a blocked hit into a stun.
+				if (stack.isIn(ItemTags.AXES) && ParryTracker.consumeWindow(player, mob)) {
+					applyMeleeParry(player, world, mob);
+				}
 			}
 
 			// Let the hit resolve normally so the axe still deals its damage.
@@ -53,16 +62,42 @@ public final class ProjectileReflectionHandler {
 		}
 
 		if (target instanceof FireballEntity fireball) {
-			reflectFireball(player, fireball);
+			// Only a projectile still on its way in can be parried.
+			if (!isIncoming(player, fireball)) {
+				return ActionResult.PASS;
+			}
+
+			if (!world.isClient()) {
+				reflectFireball(player, fireball);
+			}
+
 			return ActionResult.SUCCESS;
 		}
 
-		if (target instanceof AbstractWindChargeEntity windCharge && windCharge.getOwner() instanceof BreezeEntity breeze) {
-			reflectWindCharge(player, windCharge, breeze);
+		if (target instanceof AbstractWindChargeEntity windCharge
+				&& windCharge.getOwner() instanceof BreezeEntity breeze) {
+			if (!isIncoming(player, windCharge)) {
+				return ActionResult.PASS;
+			}
+
+			if (!world.isClient()) {
+				reflectWindCharge(player, windCharge, breeze);
+			}
+
 			return ActionResult.SUCCESS;
 		}
 
+		// Witches are never reflected: they attack with potions, which are not handled here.
 		return ActionResult.PASS;
+	}
+
+	/** True while a projectile is still flying towards the player that is trying to parry it. */
+	private static boolean isIncoming(PlayerEntity player, Entity projectile) {
+		Vec3d toPlayer = player.getEntityPos()
+				.add(0.0, player.getHeight() / 2.0, 0.0)
+				.subtract(projectile.getEntityPos());
+
+		return projectile.getVelocity().dotProduct(toPlayer) > 0.0;
 	}
 
 	private static void applyMeleeParry(PlayerEntity player, World world, MobEntity mob) {
@@ -96,9 +131,9 @@ public final class ProjectileReflectionHandler {
 		double speed = Math.max(fireball.getVelocity().length(), 0.25) * FIREBALL_REFLECTION_MULTIPLIER;
 		fireball.setVelocity(direction.normalize().multiply(speed));
 
-		// Doubling the explosion power doubles the impact damage when it lands.
-		FireballEntityAccessor accessor = (FireballEntityAccessor) (Object) fireball;
-		accessor.parry$setExplosionPower(accessor.parry$getExplosionPower() * 2);
+		// Mark the fireball so FireballEntityMixin doubles the damage it deals on the way back.
+		((ParriedProjectile) (Object) fireball)
+				.parry$markParried(owner != null ? owner.getUuid() : null);
 	}
 
 	private static void reflectWindCharge(PlayerEntity player, AbstractWindChargeEntity windCharge, BreezeEntity breeze) {
