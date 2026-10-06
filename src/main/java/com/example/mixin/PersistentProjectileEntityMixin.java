@@ -2,13 +2,13 @@ package com.example.mixin;
 
 import com.example.parry.ParriedArrow;
 import com.example.parry.ParryTracker;
+import com.example.sound.ModSounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
@@ -135,7 +135,7 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 			other.discard();
 			this.parry$setSkeletonShooter(shooter.getUuid());
 			self.getEntityWorld().playSound(null, self.getX(), self.getY(), self.getZ(),
-					SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS, 1.0F, 1.0F);
+					ModSounds.ARROW_PARRY, SoundCategory.PLAYERS, 1.0F, 1.0F);
 			break;
 		}
 	}
