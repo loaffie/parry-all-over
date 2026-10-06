@@ -17,19 +17,27 @@ import net.minecraft.util.Identifier;
  * warning and plays nothing, so the mod keeps working while you are still gathering audio.
  */
 public final class ModSounds {
+	/**
+	 * How many ticks before a mob's shot the pre-fire warnings play.
+	 *
+	 * <p>This is the single knob for the arrow and wind charge warnings: change it to move both cues
+	 * closer to (smaller) or further from (larger) the actual shot. 5 ticks is a quarter of a second.
+	 */
+	public static final int WARNING_LEAD_TICKS = 5;
+
 	/** Played when a melee mob's attack is blocked by the player's shield (the parry window opens). */
 	public static final SoundEvent MELEE_SHIELD_BLOCK = register("melee.shield_block");
 
 	/** Played when the player lands the axe counter-hit that stuns the mob. */
 	public static final SoundEvent MELEE_STUN = register("melee.stun");
 
-	/** Played the moment a bow-wielding mob starts drawing its bow, roughly a second before it fires. */
+	/** Played a few ticks before a bow-wielding mob releases its arrow. */
 	public static final SoundEvent ARROW_WARNING = register("arrow.warning");
 
 	/** Played when the player's arrow clashes with and destroys an enemy arrow. */
 	public static final SoundEvent ARROW_PARRY = register("arrow.parry");
 
-	/** Played when a breeze starts winding up a wind charge, shortly before it fires. */
+	/** Played a few ticks before a breeze launches its wind charge. */
 	public static final SoundEvent BREEZE_WARNING = register("breeze.warning");
 
 	/** Played when the player strikes an incoming ghast fireball and reflects it. */

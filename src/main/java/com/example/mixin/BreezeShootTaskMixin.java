@@ -1,33 +1,39 @@
 package com.example.mixin;
 
+import com.example.sound.DeferredSounds;
 import com.example.sound.ModSounds;
 import net.minecraft.entity.ai.brain.task.BreezeShootTask;
 import net.minecraft.entity.mob.BreezeEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Plays a warning cue when a breeze starts winding up its wind charge.
+ * Schedules the wind charge warning a few ticks before a breeze actually launches the charge.
  *
- * <p>Once this task starts the breeze "charges" for 15 ticks (0.75 s) before the wind charge is
- * actually launched, so the cue fires before the shot and gives the player time to prepare the
- * deflection.
+ * <p>{@code BreezeShootTask} starts charging in {@code run} and fires the charge a fixed 15 ticks
+ * later, so the cue is scheduled for {@code 15 - lead} ticks from the start of the wind-up. That
+ * puts it just before the launch instead of at the beginning of the charge.
  */
 @Mixin(BreezeShootTask.class)
 public abstract class BreezeShootTaskMixin {
+	/** Vanilla breeze charge length in ticks (see {@code BreezeShootTask.SHOOT_CHARGING_EXPIRY}). */
+	private static final int WIND_CHARGE_CHARGE_TICKS = 15;
+
 	@Inject(
 			method = "run(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/mob/BreezeEntity;J)V",
 			at = @At("HEAD"))
-	private void parry$warnBeforeWindCharge(ServerWorld world, BreezeEntity breeze, long time, CallbackInfo ci) {
+	private void parry$scheduleWindChargeWarning(ServerWorld world, BreezeEntity breeze, long time, CallbackInfo ci) {
 		// Only warn about charges aimed at a player.
 		if (!(breeze.getTarget() instanceof PlayerEntity)) {
 			return;
 		}
 
-		breeze.playSound(ModSounds.BREEZE_WARNING, 1.0F, 1.0F);
+		DeferredSounds.playLater(world, breeze.getX(), breeze.getY(), breeze.getZ(), ModSounds.BREEZE_WARNING,
+				SoundCategory.HOSTILE, WIND_CHARGE_CHARGE_TICKS - ModSounds.WARNING_LEAD_TICKS, 1.0F, 1.0F);
 	}
 }

@@ -1,10 +1,13 @@
 package com.example.mixin;
 
+import com.example.sound.DeferredSounds;
 import com.example.sound.ModSounds;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,38 +15,35 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Plays a warning cue the moment a bow-wielding mob starts to draw its bow.
+ * Schedules the arrow warning a few ticks before a bow-wielding mob releases its arrow.
  *
- * <p>Vanilla bow mobs - skeletons and their variants - draw for about a second before the arrow is
- * released, so this lands well before the shot and gives the player time to line up an
- * arrow-vs-arrow parry.
+ * <p>Vanilla bow mobs - skeletons and their variants - draw for a fixed 20 ticks before firing, and
+ * {@code LivingEntity#setCurrentHand} is the shared "start using an item" entry point the bow goal
+ * calls exactly once per shot. From there the cue is scheduled for {@code 20 - lead} ticks, so it
+ * lands right before the arrow flies rather than at the start of the draw.
  *
- * <p>{@code LivingEntity#setCurrentHand} is the shared entry point for every "start using an item"
- * action (bows, crossbows, potions, tridents, ...), so the injection filters down to mobs that are
- * actually holding a bow and are aiming at a player.
+ * <p>The injection is filtered to mobs that are holding a bow and aiming at a player, so crossbows,
+ * potions, tridents and player bow draws do not trigger it.
  */
 @Mixin(LivingEntity.class)
 public abstract class BowWarningMixin {
+	/** Vanilla bow draw length in ticks (see {@code BowAttackGoal}, which fires at item use time 20). */
+	private static final int BOW_DRAW_TICKS = 20;
+
 	@Inject(method = "setCurrentHand", at = @At("HEAD"))
-	private void parry$warnBeforeBowShot(Hand hand, CallbackInfo ci) {
+	private void parry$scheduleBowWarning(Hand hand, CallbackInfo ci) {
 		LivingEntity self = (LivingEntity) (Object) this;
 
-		// Players draw bows the same way; this cue is only for hostile mobs. Server side only so
-		// the sound is broadcast once instead of also firing locally on every client.
-		if (!(self instanceof MobEntity mob) || self.getEntityWorld().isClient()) {
+		if (!(self instanceof MobEntity mob) || !(self.getEntityWorld() instanceof ServerWorld world)) {
 			return;
 		}
 
-		// Crossbows, potions, tridents and so on draw through the same method - only warn for bows.
-		if (!mob.isHolding(Items.BOW)) {
+		// Only warn for an actual bow aimed at a player.
+		if (!mob.isHolding(Items.BOW) || !(mob.getTarget() instanceof PlayerEntity)) {
 			return;
 		}
 
-		// Do not warn about shots that are not aimed at a player.
-		if (!(mob.getTarget() instanceof PlayerEntity)) {
-			return;
-		}
-
-		mob.playSound(ModSounds.ARROW_WARNING, 1.0F, 1.0F);
+		DeferredSounds.playLater(world, mob.getX(), mob.getY(), mob.getZ(), ModSounds.ARROW_WARNING,
+				SoundCategory.HOSTILE, BOW_DRAW_TICKS - ModSounds.WARNING_LEAD_TICKS, 1.0F, 1.0F);
 	}
 }

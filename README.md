@@ -13,10 +13,13 @@ required. Drop OGG Vorbis files into `src/main/resources/assets/modid/sounds/` a
 | --- | --- |
 | `melee/shield_block.ogg` | Your shield blocked a melee mob's hit (the parry window opens) |
 | `melee/stun.ogg` | Your axe counter-hit landed and stunned the mob |
-| `arrow/warning.ogg` | A bow-wielding mob started drawing its bow (about a second before it fires) |
+| `arrow/warning.ogg` | A bow-wielding mob is about to release its arrow (a few ticks before) |
 | `arrow/parry.ogg` | Your arrow clashed with and destroyed an enemy arrow |
-| `breeze/warning.ogg` | A breeze started winding up a wind charge (shortly before it fires) |
+| `breeze/warning.ogg` | A breeze is about to launch its wind charge (a few ticks before) |
 | `fireball/parry.ogg` | You struck an incoming ghast fireball and reflected it |
+
+Both pre-shot warnings fire `ModSounds.WARNING_LEAD_TICKS` ticks (5 by default, a quarter of a
+second) before the shot; change that one constant to move them closer to or further from it.
 
 A missing file is harmless - the game logs a warning and plays nothing, so you can add the sounds
 one at a time and rebuild (`./gradlew build`) when you are done. See
