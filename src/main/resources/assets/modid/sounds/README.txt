@@ -13,9 +13,9 @@ PASTE YOUR FILES HERE (paths are relative to this folder)
 ---------------------------------------------------------
   melee/shield_block.ogg    ->  melee parry: your shield blocked a mob's hit
   melee/stun.ogg            ->  melee parry: your axe hit landed and stunned the mob
-  arrow/warning.ogg         ->  a bow-wielding mob just started drawing its bow
+  arrow/warning.ogg         ->  a bow-wielding mob is about to release its arrow
   arrow/parry.ogg           ->  your arrow clashed with and destroyed an enemy arrow
-  breeze/warning.ogg        ->  a breeze just started winding up a wind charge
+  breeze/warning.ogg        ->  a breeze is about to launch its wind charge
   fireball/parry.ogg        ->  you struck an incoming ghast fireball and reflected it
 
 So, for example, the first one lives at:
@@ -42,6 +42,9 @@ NOTES
   you can add the sounds one at a time.
 - After adding or replacing a file, rebuild the mod (./gradlew build) so the new
   audio is packed into the jar.
+- Both "warning" cues play a few ticks before the shot (5 ticks by default, a
+  quarter of a second). To move them closer to or further from the shot, change
+  WARNING_LEAD_TICKS in src/main/java/com/example/sound/ModSounds.java.
 - Sounds are positional: they play from the mob/player that caused them, so they
   get quieter with distance and are stereo-panned by direction.
 - Do not rename the folders or files unless you also update
