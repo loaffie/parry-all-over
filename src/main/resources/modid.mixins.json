@@ -1,9 +1,13 @@
 {
 	"required": true,
 	"package": "com.example.mixin",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+		"AbstractWindChargeMixin",
+		"FireballEntityAccessor",
+		"LivingEntityMixin",
+		"MobMixin",
+		"PersistentProjectileEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
