@@ -1,5 +1,6 @@
 package com.example.parry;
 
+import com.example.sound.ModSounds;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BreezeEntity;
@@ -10,7 +11,6 @@ import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
@@ -101,8 +101,9 @@ public final class ProjectileReflectionHandler {
 	}
 
 	private static void applyMeleeParry(PlayerEntity player, World world, MobEntity mob) {
+		// Cue for the axe counter-hit that actually applies the stun.
 		world.playSound(null, player.getX(), player.getY(), player.getZ(),
-				SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 1.0F, 1.0F);
+				ModSounds.MELEE_STUN, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
 		ParryTracker.stun(mob, ParryTracker.STUN_TICKS);
 
@@ -130,6 +131,9 @@ public final class ProjectileReflectionHandler {
 
 		double speed = Math.max(fireball.getVelocity().length(), 0.25) * FIREBALL_REFLECTION_MULTIPLIER;
 		fireball.setVelocity(direction.normalize().multiply(speed));
+
+		player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(),
+				ModSounds.FIREBALL_PARRY, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
 		// Mark the fireball so FireballEntityMixin doubles the damage it deals on the way back.
 		((ParriedProjectile) (Object) fireball)

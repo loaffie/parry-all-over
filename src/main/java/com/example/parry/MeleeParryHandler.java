@@ -1,5 +1,6 @@
 package com.example.parry;
 
+import com.example.sound.ModSounds;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -13,6 +14,7 @@ import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.ShulkerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.sound.SoundCategory;
 
 /**
  * Detects when a player successfully blocks a melee attack from a hostile, non-projectile mob with
@@ -51,6 +53,11 @@ public final class MeleeParryHandler {
 		}
 
 		ParryTracker.openWindow(player, mob);
+
+		// Cue that the block opened a counter-attack window. This layers on top of the vanilla
+		// shield sound, so the custom sound can be a distinct "parry ready" chime.
+		player.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(),
+				ModSounds.MELEE_SHIELD_BLOCK, SoundCategory.PLAYERS, 1.0F, 1.0F);
 	}
 
 	/**

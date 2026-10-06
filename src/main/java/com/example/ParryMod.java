@@ -3,6 +3,7 @@ package com.example;
 import com.example.effect.StunEffect;
 import com.example.parry.MeleeParryHandler;
 import com.example.parry.ProjectileReflectionHandler;
+import com.example.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
@@ -32,6 +33,7 @@ public class ParryMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModSounds.init();
 		MeleeParryHandler.init();
 		ProjectileReflectionHandler.init();
 
