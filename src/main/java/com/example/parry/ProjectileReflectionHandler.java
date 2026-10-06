@@ -1,0 +1,118 @@
+package com.example.parry;
+
+import com.example.mixin.FireballEntityAccessor;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.BreezeEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractWindChargeEntity;
+import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+
+/**
+ * Handles the player's melee swing.
+ *
+ * <ul>
+ *     <li>Counter-attacking a mob with an axe during a parry window stuns it.</li>
+ *     <li>Striking a ghast fireball reflects it at 2.5x speed and doubles its impact damage.</li>
+ *     <li>Striking a breeze wind charge returns it at 3.0x speed so it stuns the breeze.</li>
+ * </ul>
+ */
+public final class ProjectileReflectionHandler {
+	private static final double FIREBALL_REFLECTION_MULTIPLIER = 2.5;
+	private static final double WIND_CHARGE_REFLECTION_MULTIPLIER = 3.0;
+
+	private ProjectileReflectionHandler() {
+	}
+
+	public static void init() {
+		AttackEntityCallback.EVENT.register(ProjectileReflectionHandler::onAttackEntity);
+	}
+
+	private static ActionResult onAttackEntity(PlayerEntity player, World world, Hand hand,
+			Entity target, EntityHitResult hitResult) {
+		if (target instanceof MobEntity mob) {
+			ItemStack stack = player.getStackInHand(hand);
+
+			// The axe is required to convert a blocked hit into a stun.
+			if (stack.isIn(ItemTags.AXES) && ParryTracker.consumeWindow(player, mob)) {
+				applyMeleeParry(player, world, mob);
+			}
+
+			// Let the hit resolve normally so the axe still deals its damage.
+			return ActionResult.PASS;
+		}
+
+		if (target instanceof FireballEntity fireball) {
+			reflectFireball(player, fireball);
+			return ActionResult.SUCCESS;
+		}
+
+		if (target instanceof AbstractWindChargeEntity windCharge && windCharge.getOwner() instanceof BreezeEntity breeze) {
+			reflectWindCharge(player, windCharge, breeze);
+			return ActionResult.SUCCESS;
+		}
+
+		return ActionResult.PASS;
+	}
+
+	private static void applyMeleeParry(PlayerEntity player, World world, MobEntity mob) {
+		world.playSound(null, player.getX(), player.getY(), player.getZ(),
+				SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 1.0F, 1.0F);
+
+		ParryTracker.stun(mob, ParryTracker.STUN_TICKS);
+
+		Vec3d away = mob.getEntityPos().subtract(player.getEntityPos());
+
+		if (away.lengthSquared() < 1.0E-4) {
+			away = player.getRotationVec(1.0F);
+		}
+
+		Vec3d knockback = away.normalize().multiply(0.45);
+		mob.addVelocity(knockback.x, 0.35, knockback.z);
+	}
+
+	private static void reflectFireball(PlayerEntity player, FireballEntity fireball) {
+		Entity owner = fireball.getOwner();
+		Vec3d aim = owner != null
+				? owner.getBoundingBox().getCenter()
+				: player.getEyePos().add(player.getRotationVec(1.0F).multiply(12.0));
+
+		Vec3d direction = aim.subtract(fireball.getEntityPos());
+
+		if (direction.lengthSquared() < 1.0E-6) {
+			direction = player.getRotationVec(1.0F);
+		}
+
+		double speed = Math.max(fireball.getVelocity().length(), 0.25) * FIREBALL_REFLECTION_MULTIPLIER;
+		fireball.setVelocity(direction.normalize().multiply(speed));
+
+		// Doubling the explosion power doubles the impact damage when it lands.
+		FireballEntityAccessor accessor = (FireballEntityAccessor) (Object) fireball;
+		accessor.parry$setExplosionPower(accessor.parry$getExplosionPower() * 2);
+	}
+
+	private static void reflectWindCharge(PlayerEntity player, AbstractWindChargeEntity windCharge, BreezeEntity breeze) {
+		Vec3d direction = breeze.getBoundingBox().getCenter().subtract(windCharge.getEntityPos());
+
+		if (direction.lengthSquared() < 1.0E-6) {
+			direction = player.getRotationVec(1.0F);
+		}
+
+		double speed = Math.max(windCharge.getVelocity().length(), 0.25) * WIND_CHARGE_REFLECTION_MULTIPLIER;
+		windCharge.setVelocity(direction.normalize().multiply(speed));
+
+		// Re-own the charge to the player so it is allowed to collide with the breeze.
+		windCharge.setOwner(player);
+		((ParriedProjectile) (Object) windCharge).parry$markParried(breeze.getUuid());
+	}
+}
