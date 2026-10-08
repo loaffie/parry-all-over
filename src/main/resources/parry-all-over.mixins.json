@@ -1,0 +1,20 @@
+{
+	"required": true,
+	"package": "com.loaffie.parryallover.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"AbstractWindChargeMixin",
+		"BowWarningMixin",
+		"BreezeShootTaskMixin",
+		"FireballEntityMixin",
+		"LivingEntityMixin",
+		"MobMixin",
+		"PersistentProjectileEntityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

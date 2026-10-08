@@ -15,7 +15,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"modid" {
+		"parry-all-over" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

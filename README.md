@@ -1,30 +1,53 @@
-# Example Mod
+# Parry All Over
 
-## Setup
+A Fabric mod for Minecraft 1.21.11 that turns defending into offense. Block a melee hit with your
+shield and you get a short window to answer with an axe - land it and the mob is stunned for two
+seconds. Projectiles can be parried too, and a parried shot is credited to whoever sent it back.
 
-For setup instructions, please see the [Fabric Documentation page](https://docs.fabricmc.net/develop/getting-started/creating-a-project#setting-up) related to the IDE that you are using.
+## Parries
+
+| You | Result |
+| --- | --- |
+| Block a melee hit, then hit the mob with an axe within the window | Mob is stunned for 2s, movement frozen, knocked back a little |
+| Swing at an incoming enemy arrow with your own arrow in flight | Enemy arrow is destroyed, your arrow homes onto the shooter and stuns it |
+| Swing at an incoming breeze wind charge | Charge returns at 3x speed and stuns the breeze |
+| Swing at an incoming ghast fireball | Fireball returns at 2.5x speed and hits for double damage |
+
+A stun freezes AI, navigation, targeting and attacks, and shows particles above the mob's head.
+
+Fireballs are fire damage, and some mobs (ghasts, blazes, magma cubes, withers) are fire immune, so
+a parried fireball gets attributed to the player who sent it back - otherwise the ghast would shrug
+off its own fireball. See `FireballEntityMixin`.
 
 ## Custom parry sounds
 
-Every parry cue is a custom sound you can replace with your own audio - no code or JSON edits
-required. Drop OGG Vorbis files into `src/main/resources/assets/modid/sounds/` at these exact paths:
+Every cue is a sound you can replace with your own audio - no code or JSON edits required. Drop
+OGG Vorbis files into `src/main/resources/assets/parry-all-over/sounds/` at these exact paths:
 
 | File | When it plays |
 | --- | --- |
-| `melee/shield_block.ogg` | Your shield blocked a melee mob's hit (the parry window opens) |
-| `melee/stun.ogg` | Your axe counter-hit landed and stunned the mob |
-| `arrow/warning.ogg` | A bow-wielding mob is about to release its arrow (a few ticks before) |
-| `arrow/parry.ogg` | Your arrow clashed with and destroyed an enemy arrow |
-| `breeze/warning.ogg` | A breeze is about to launch its wind charge (a few ticks before) |
-| `fireball/parry.ogg` | You struck an incoming ghast fireball and reflected it |
+| `melee/shield_block.ogg` | Your shield blocked a melee hit and the window opened |
+| `melee/stun.ogg` | Your axe counter-hit landed |
+| `arrow/warning.ogg` | A bow mob is about to loose its arrow |
+| `arrow/parry.ogg` | Your arrow shattered an enemy arrow |
+| `breeze/warning.ogg` | A breeze is about to launch its wind charge |
+| `fireball/parry.ogg` | You struck a ghast fireball and sent it back |
 
 Both pre-shot warnings fire `ModSounds.WARNING_LEAD_TICKS` ticks (5 by default, a quarter of a
-second) before the shot; change that one constant to move them closer to or further from it.
+second) before the shot; that one constant moves both cues.
 
 A missing file is harmless - the game logs a warning and plays nothing, so you can add the sounds
-one at a time and rebuild (`./gradlew build`) when you are done. See
-`src/main/resources/assets/modid/sounds/README.txt` for more detail.
+one at a time and rebuild (`./gradlew build`) when you are done. More detail is in
+`src/main/resources/assets/parry-all-over/sounds/README.txt`.
+
+## Building
+
+```
+./gradlew build
+```
+
+The mod jar lands in `build/libs/`.
 
 ## License
 
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+Released under CC0. Do whatever you like with it.
