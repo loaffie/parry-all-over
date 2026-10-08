@@ -1,33 +1,29 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "parry-all-over",
 	"version": "${version}",
-	"name": "Parry Mechanics",
-	"description": "Adds a stun status effect plus shield, projectile and arrow parry mechanics.",
+	"name": "Parry All Over",
+	"description": "Parry melee hits, arrows, wind charges and fireballs. Landing a counter stuns the mob.",
 	"authors": [
-		"Me!"
+		"loaffie"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/loaffie/parry-all-over",
+		"sources": "https://github.com/loaffie/parry-all-over"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"icon": "assets/parry-all-over/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.example.ParryMod"
+			"com.loaffie.parryallover.ParryMod"
 		],
 		"client": [
-			"com.example.client.ExampleModClient"
+			"com.loaffie.parryallover.client.ParryModClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
-		{
-			"config": "modid.client.mixins.json",
-			"environment": "client"
-		}
+		"parry-all-over.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.19.5",
