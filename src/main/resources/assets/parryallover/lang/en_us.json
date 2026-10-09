@@ -1,0 +1,9 @@
+{
+	"effect.parryallover.stun": "Stun",
+	"subtitles.parryallover.melee.shield_block": "Shield blocked",
+	"subtitles.parryallover.melee.stun": "Parry counter",
+	"subtitles.parryallover.arrow.warning": "Bow drawn",
+	"subtitles.parryallover.arrow.parry": "Arrow parried",
+	"subtitles.parryallover.breeze.warning": "Breeze winds up",
+	"subtitles.parryallover.fireball.parry": "Fireball parried"
+}

@@ -7,8 +7,8 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 
 /**
- * The mod's sound events. Each one is an entry in {@code assets/parry-all-over/sounds.json} and
- * the audio behind it lives at {@code assets/parry-all-over/sounds/<name>.ogg}, so you swap a
+ * The mod's sound events. Each one is an entry in {@code assets/parryallover/sounds.json} and
+ * the audio behind it lives at {@code assets/parryallover/sounds/<name>.ogg}, so you swap a
  * sound by dropping in your own OGG Vorbis file - no code changes needed.
  *
  * <p>All of them are optional: if the matching .ogg is missing the game logs a warning and plays

@@ -15,7 +15,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"parry-all-over" {
+		"parryallover" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
@@ -32,8 +32,10 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
+group = project.maven_group
+
 base {
-	archivesName = "parry-all-over"
+	archivesName = project.archives_base_name
 }
 
 processResources {

@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "parry-all-over",
+	"id": "parryallover",
 	"version": "${version}",
 	"name": "parry all over",
-	"description": "haha parry go brrt skrrt bpt",
+	"description": "Parry All Over mod",
 	"authors": [
 		"loaffie"
 	],
@@ -12,7 +12,7 @@
 		"sources": "https://github.com/loaffie/parry-all-over"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/parry-all-over/icon.png",
+	"icon": "assets/parryallover/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -23,7 +23,7 @@
 		]
 	},
 	"mixins": [
-		"parry-all-over.mixins.json"
+		"parryallover.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.19.5",

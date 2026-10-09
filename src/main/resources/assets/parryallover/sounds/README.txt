@@ -18,11 +18,11 @@ DROP YOUR FILES HERE (paths relative to this folder)
 
 So the first one lives at:
 
-  src/main/resources/assets/parry-all-over/sounds/melee/shield_block.ogg
+  src/main/resources/assets/parryallover/sounds/melee/shield_block.ogg
 
 and the finished tree looks like:
 
-  src/main/resources/assets/parry-all-over/sounds/
+  src/main/resources/assets/parryallover/sounds/
     melee/
       shield_block.ogg
       stun.ogg

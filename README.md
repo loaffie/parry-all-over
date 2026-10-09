@@ -22,7 +22,7 @@ off its own fireball. See `FireballEntityMixin`.
 ## Custom parry sounds
 
 Every cue is a sound you can replace with your own audio - no code or JSON edits required. Drop
-OGG Vorbis files into `src/main/resources/assets/parry-all-over/sounds/` at these exact paths:
+OGG Vorbis files into `src/main/resources/assets/parryallover/sounds/` at these exact paths:
 
 | File | When it plays |
 | --- | --- |
@@ -38,7 +38,7 @@ second) before the shot; that one constant moves both cues.
 
 A missing file is harmless - the game logs a warning and plays nothing, so you can add the sounds
 one at a time and rebuild (`./gradlew build`) when you are done. More detail is in
-`src/main/resources/assets/parry-all-over/sounds/README.txt`.
+`src/main/resources/assets/parryallover/sounds/README.txt`.
 
 ## Building
 

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * Common entrypoint. Registers the stun effect and hooks up the parry listeners.
  */
 public class ParryMod implements ModInitializer {
-	public static final String MOD_ID = "parry-all-over";
+	public static final String MOD_ID = "parryallover";
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 

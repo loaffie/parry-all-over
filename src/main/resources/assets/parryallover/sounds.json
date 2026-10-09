@@ -1,0 +1,38 @@
+{
+	"melee.shield_block": {
+		"subtitle": "subtitles.parryallover.melee.shield_block",
+		"sounds": [
+			"parryallover:melee/shield_block"
+		]
+	},
+	"melee.stun": {
+		"subtitle": "subtitles.parryallover.melee.stun",
+		"sounds": [
+			"parryallover:melee/stun"
+		]
+	},
+	"arrow.warning": {
+		"subtitle": "subtitles.parryallover.arrow.warning",
+		"sounds": [
+			"parryallover:arrow/warning"
+		]
+	},
+	"arrow.parry": {
+		"subtitle": "subtitles.parryallover.arrow.parry",
+		"sounds": [
+			"parryallover:arrow/parry"
+		]
+	},
+	"breeze.warning": {
+		"subtitle": "subtitles.parryallover.breeze.warning",
+		"sounds": [
+			"parryallover:breeze/warning"
+		]
+	},
+	"fireball.parry": {
+		"subtitle": "subtitles.parryallover.fireball.parry",
+		"sounds": [
+			"parryallover:fireball/parry"
+		]
+	}
+}
