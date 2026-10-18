@@ -13,7 +13,24 @@ seconds. Projectiles can be parried too, and a parried shot is credited to whoev
 | Swing at an incoming breeze wind charge | Charge returns at 3x speed and stuns the breeze |
 | Swing at an incoming ghast fireball | Fireball returns at 2.5x speed and hits for double damage |
 
-A stun freezes AI, navigation, targeting and attacks, and shows particles above the mob's head.
+A stun freezes AI, navigation, targeting and attacks. The counter window after a shield block is
+half a second (`ParryTracker.WINDOW_TICKS`).
+
+## Stun animation
+
+A stunned mob plays a three-part animation, drawn entirely on the client from a single packet the
+server sends when the stun lands (see `StunAnimations`):
+
+1. **Impact** - a flat shockwave ring of gold and lavender sparks bursts out at head height.
+2. **Dizzy** - three cartoon stars circle the mob's head on a tilted, wobbling ring, twinkling and
+   leaving a sparkle trail, while the mob's head rolls round in a slow daze.
+3. **Recover** - the stars shrink away, the head settles, and a small pop marks it shaking it off.
+
+The star and spark sprites are `assets/parryallover/textures/particle/dizzy_star_*.png` and
+`stun_spark_*.png` (white, tinted in code), so you can redraw them.
+
+Warning cues are tied to the mob that queued them: if it dies, gets stunned or stops drawing its
+bow before the shot, the warning is dropped instead of playing for nothing.
 
 Fireballs are fire damage, and some mobs (ghasts, blazes, magma cubes, withers) are fire immune, so
 a parried fireball gets attributed to the player who sent it back - otherwise the ghast would shrug

@@ -1,8 +1,11 @@
 package com.loaffie.parryallover;
 
 import com.loaffie.parryallover.effect.StunEffect;
+import com.loaffie.parryallover.network.StunSync;
 import com.loaffie.parryallover.parry.MeleeParryHandler;
+import com.loaffie.parryallover.parry.ParryTracker;
 import com.loaffie.parryallover.parry.ProjectileReflectionHandler;
+import com.loaffie.parryallover.particle.ModParticles;
 import com.loaffie.parryallover.sound.DeferredSounds;
 import com.loaffie.parryallover.sound.ModSounds;
 import net.fabricmc.api.ModInitializer;
@@ -16,7 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Common entrypoint. Registers the stun effect and hooks up the parry listeners.
+ * Common entrypoint. Registers the stun effect, particles and network payload, and hooks up the parry
+ * listeners.
  */
 public class ParryMod implements ModInitializer {
 	public static final String MOD_ID = "parryallover";
@@ -32,7 +36,10 @@ public class ParryMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModSounds.init();
+		ModParticles.init();
+		StunSync.init();
 		DeferredSounds.init();
+		ParryTracker.init();
 		MeleeParryHandler.init();
 		ProjectileReflectionHandler.init();
 

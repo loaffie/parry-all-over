@@ -31,7 +31,8 @@ public abstract class BreezeShootTaskMixin {
 			return;
 		}
 
-		DeferredSounds.playLater(world, breeze.getX(), breeze.getY(), breeze.getZ(), ModSounds.BREEZE_WARNING,
-				SoundCategory.HOSTILE, WIND_CHARGE_CHARGE_TICKS - ModSounds.WARNING_LEAD_TICKS, 1.0F, 1.0F);
+		DeferredSounds.playLater(breeze, ModSounds.BREEZE_WARNING, SoundCategory.HOSTILE,
+				WIND_CHARGE_CHARGE_TICKS - ModSounds.WARNING_LEAD_TICKS, 1.0F, 1.0F,
+				mob -> mob.getTarget() instanceof PlayerEntity);
 	}
 }

@@ -46,10 +46,15 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 	@Unique
 	private int parry$homingTicks;
 
+	/** The shooter, looked up once instead of by UUID every tick of the chase. */
+	@Unique
+	private LivingEntity parry$homingTarget;
+
 	@Override
 	public void parry$setSkeletonShooter(UUID shooter) {
 		this.parry$shooter = shooter;
 		this.parry$homingTicks = 0;
+		this.parry$homingTarget = null;
 	}
 
 	@Override
@@ -77,15 +82,17 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 	/** Steers a parried arrow at its target, so a long shot can't be beaten by gravity. */
 	@Unique
 	private void parry$homeOntoTarget(PersistentProjectileEntity self) {
-		if (!(self.getEntityWorld() instanceof ServerWorld world)) {
-			this.parry$shooter = null;
-			return;
+		LivingEntity target = this.parry$homingTarget;
+
+		if (target == null) {
+			if (self.getEntityWorld() instanceof ServerWorld world
+					&& world.getEntity(this.parry$shooter) instanceof LivingEntity living) {
+				target = this.parry$homingTarget = living;
+			}
 		}
 
-		Entity target = world.getEntity(this.parry$shooter);
-
-		if (!(target instanceof LivingEntity living) || !living.isAlive()) {
-			this.parry$shooter = null;
+		if (target == null || !target.isAlive() || target.isRemoved()) {
+			this.parry$stopHoming();
 			return;
 		}
 
@@ -94,7 +101,7 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 		boolean tooFar = distanceSquared > HOMING_RANGE * HOMING_RANGE;
 
 		if (resting || tooFar || ++this.parry$homingTicks > HOMING_TICKS) {
-			this.parry$shooter = null;
+			this.parry$stopHoming();
 			return;
 		}
 
@@ -104,6 +111,12 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 			double speed = Math.max(self.getVelocity().length(), 1.0);
 			self.setVelocity(direction.normalize().multiply(speed));
 		}
+	}
+
+	@Unique
+	private void parry$stopHoming() {
+		this.parry$shooter = null;
+		this.parry$homingTarget = null;
 	}
 
 	/** Discards an enemy arrow the player's arrow has run into. */
@@ -118,27 +131,26 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 		// through each other between sampled positions.
 		Box swept = self.getBoundingBox().stretch(self.getVelocity()).expand(PARRY_RANGE);
 
+		// All the filtering happens in the predicate, so nothing that can't clash is ever collected.
 		List<PersistentProjectileEntity> nearby = self.getEntityWorld().getEntitiesByType(
-				TypeFilter.instanceOf(PersistentProjectileEntity.class), swept, arrow -> arrow != self);
+				TypeFilter.instanceOf(PersistentProjectileEntity.class), swept,
+				other -> other != self
+						&& other.getVelocity().lengthSquared() >= 1.0E-4
+						&& other.getOwner() instanceof LivingEntity owner
+						&& !(owner instanceof PlayerEntity));
 
-		for (PersistentProjectileEntity other : nearby) {
-			if (other == self
-					|| other.getVelocity().lengthSquared() < 1.0E-4
-					|| other.getOwner() instanceof PlayerEntity
-					|| !(other.getOwner() instanceof LivingEntity shooter)) {
-				continue;
-			}
-
-			if (!swept.intersects(other.getBoundingBox())) {
-				continue;
-			}
-
-			other.discard();
-			this.parry$setSkeletonShooter(shooter.getUuid());
-			self.getEntityWorld().playSound(null, self.getX(), self.getY(), self.getZ(),
-					ModSounds.ARROW_PARRY, SoundCategory.PLAYERS, 1.0F, 1.0F);
-			break;
+		if (nearby.isEmpty()) {
+			return;
 		}
+
+		PersistentProjectileEntity other = nearby.get(0);
+		LivingEntity shooter = (LivingEntity) other.getOwner();
+
+		other.discard();
+		this.parry$setSkeletonShooter(shooter.getUuid());
+		this.parry$homingTarget = shooter;
+		self.getEntityWorld().playSound(null, self.getX(), self.getY(), self.getZ(),
+				ModSounds.ARROW_PARRY, SoundCategory.PLAYERS, 1.0F, 1.0F);
 	}
 
 	@Inject(method = "onEntityHit", at = @At("HEAD"))
@@ -153,7 +165,7 @@ public abstract class PersistentProjectileEntityMixin implements ParriedArrow {
 
 		if (hit instanceof LivingEntity living && hit.getUuid().equals(this.parry$shooter)) {
 			ParryTracker.stun(living, ParryTracker.STUN_TICKS);
-			this.parry$shooter = null;
+			this.parry$stopHoming();
 		}
 	}
 }

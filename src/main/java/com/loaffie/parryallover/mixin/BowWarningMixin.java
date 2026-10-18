@@ -20,7 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>{@code setCurrentHand} is the shared "start using an item" entry point the bow goal calls once
  * per shot, so queueing {@code 20 - lead} ticks from there lands the cue just before the arrow
  * flies rather than at the start of the draw. Filtered to mobs holding a bow and aiming at a
- * player, so crossbows, potions, tridents and the player's own bow stay quiet.
+ * player, so crossbows, potions, tridents and the player's own bow stay quiet. If the mob stops
+ * drawing, dies or is stunned before the shot, the cue is dropped.
  */
 @Mixin(LivingEntity.class)
 public abstract class BowWarningMixin {
@@ -31,7 +32,7 @@ public abstract class BowWarningMixin {
 	private void parry$queueBowWarning(Hand hand, CallbackInfo ci) {
 		LivingEntity self = (LivingEntity) (Object) this;
 
-		if (!(self instanceof MobEntity mob) || !(self.getEntityWorld() instanceof ServerWorld world)) {
+		if (!(self instanceof MobEntity mob) || !(self.getEntityWorld() instanceof ServerWorld)) {
 			return;
 		}
 
@@ -39,7 +40,8 @@ public abstract class BowWarningMixin {
 			return;
 		}
 
-		DeferredSounds.playLater(world, mob.getX(), mob.getY(), mob.getZ(), ModSounds.ARROW_WARNING,
-				SoundCategory.HOSTILE, BOW_DRAW_TICKS - ModSounds.WARNING_LEAD_TICKS, 1.0F, 1.0F);
+		// Skip the cue if the mob let go of the draw (lost sight of you, switched targets...).
+		DeferredSounds.playLater(mob, ModSounds.ARROW_WARNING, SoundCategory.HOSTILE,
+				BOW_DRAW_TICKS - ModSounds.WARNING_LEAD_TICKS, 1.0F, 1.0F, MobEntity::isUsingItem);
 	}
 }

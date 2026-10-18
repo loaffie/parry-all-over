@@ -20,11 +20,21 @@ public abstract class MobMixin {
 	private void parry$disableAi(CallbackInfo ci) {
 		MobEntity self = (MobEntity) (Object) this;
 
-		if (self.hasStatusEffect(ParryMod.STUN)) {
-			self.setTarget(null);
-			self.getNavigation().stop();
-			ci.cancel();
+		if (!self.hasStatusEffect(ParryMod.STUN)) {
+			return;
 		}
+
+		// Only touch the target and path when there is something to drop; both fire side effects
+		// (target change events, path recalculation) that are wasted work every tick.
+		if (self.getTarget() != null) {
+			self.setTarget(null);
+		}
+
+		if (!self.getNavigation().isIdle()) {
+			self.getNavigation().stop();
+		}
+
+		ci.cancel();
 	}
 
 	@Inject(method = "tryAttack", at = @At("HEAD"), cancellable = true)
